@@ -5,11 +5,34 @@ import { Upload } from "lucide-react";
 const FileUpload: React.FC = () => {
   const fileInputRef = useRef<HTMLInputElement | null>(null);
 
-  const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
-    if (file) {
-      console.log("Selected file:", file);
-      // Handle file upload logic here (e.g., upload to S3, Firebase, etc.)
+    if (!file) return;
+
+    if (file.type !== "application/pdf") {
+      alert("Please upload a PDF file.");
+      return;
+    }
+
+    const formData = new FormData();
+    formData.append("file", file);
+
+    try {
+      const response = await fetch("http://localhost:8000/upload/pdf", {
+        method: "POST",
+        body: formData,
+      });
+
+      if (!response.ok) {
+        throw new Error("Upload failed");
+      }
+
+      const result = await response.json();
+      console.log("Upload success:", result);
+      alert("File uploaded successfully!");
+    } catch (err) {
+      console.error("Error uploading file:", err);
+      alert("Failed to upload the file.");
     }
   };
 
@@ -29,6 +52,7 @@ const FileUpload: React.FC = () => {
       <input
         ref={fileInputRef}
         type="file"
+        accept="application/pdf"
         className="hidden"
         onChange={handleFileUpload}
       />
