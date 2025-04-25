@@ -1,7 +1,15 @@
 import express from 'express';
 import cors from 'cors';
 import multer from 'multer';
+import { Queue } from 'bullmq';
 
+
+const queue = new Queue('file-upload-queue', {
+  connection: {
+    host: 'localhost',
+    port: '6379',
+  },
+});
 
 const storage = multer.diskStorage({
     destination: function (req, file, cb) {
@@ -21,15 +29,16 @@ app.get('/', (req, res) => {
 });
 
 
-app.post('/upload/pdf', upload.single('file')), (req, res) => {
-    if (!req.file) {
-        return res.status(400).json({ error: 'No file uploaded' });
-    }
-    
-    // Here you can process the file, e.g., save it to a database or perform some operations
-    console.log('File uploaded:', req.file);
-    
-    return res.json({ message: 'File uploaded successfully', file: req.file });
-}
+app.post('/upload/pdf', upload.single('pdf'), async (req, res) => {
+  await queue.add(
+    'file-ready',
+    JSON.stringify({
+      filename: req.file.originalname,
+      destination: req.file.destination,
+      path: req.file.path,
+    })
+  );
+  return res.json({ message: 'uploaded' });
+});
 
 app.listen(8000, () => console.log(`Server started on PORT:${8000}`));
