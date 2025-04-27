@@ -1,5 +1,6 @@
 import Image from "next/image";
 import FileUpload from "./components/file-upload";
+import ChatComponent from "./components/chat";
 
 export default function Home() {
   return (
@@ -9,8 +10,7 @@ export default function Home() {
           <FileUpload />
         </div>
         <div className="w-[70vw] min-h-screen border-l-2 border-gray-400 p-4">
-          <h1 className="text-2xl font-bold">Content Area</h1>
-          <p>This is the main content area.</p>
+          <ChatComponent />
         </div>
       </div>
     </div>
